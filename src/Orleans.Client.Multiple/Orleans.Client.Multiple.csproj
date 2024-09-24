@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+	<PropertyGroup>
+		<PackageId>Orleans.Client.Multiple</PackageId>
+		<Version>8.2.0</Version>
+		<Authors>Carlos Bueno</Authors>
+		<RepositoryUrl>https:/https://github.com/cabueno360/Orleans.Client.Multiple</RepositoryUrl>
+		<PackageTags>
+			Orleans, .NET, Multiple Clients, Distributed Systems, Microsoft Orleans, Clustering, Client Management, Grain, Distributed Applications, Cluster Client, Service ID, Cluster ID, Dependency Injection, .NET Core, .NET 6, .NET 7, .NET 8
+		</PackageTags>
+		<Description>
+				Orleans.Client.Multiple is a library that enables support for multiple Orleans clients within the same .NET application. This allows you to connect to multiple Orleans clusters or services, each with different configurations (such as different Service IDs or Cluster IDs), using Microsoft Orleans 8.2.0.
+		</Description>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageProjectUrl>https://https://github.com/cabueno360/Orleans.Client.Multiple</PackageProjectUrl>
+	</PropertyGroup>
+	
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Orleans.Client" Version="8.2.0" />
+	</ItemGroup>
+	<ItemGroup>
+
+		<None Include="docs\README.md" Pack="true" PackagePath="\" />
+
+	</ItemGroup>
+</Project>
