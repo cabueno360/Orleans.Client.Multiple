@@ -16,7 +16,7 @@ Orleans.Client.Multiple is a library that enables support for multiple Orleans c
 You can install this package via NuGet Package Manager Console:
 
 ```bash
-dotnet add package Orleans.Client.Multiple --version 8.2.0
+dotnet add package Orleans.Client.Multiple --version 8.2.0.0
 ```
 
 Or you can install it via the NuGet UI in Visual Studio.
@@ -30,35 +30,62 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Orlean.Client.Multiple;
 
-class Program
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+
+var configBuilder = builder.Configuration
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
+    .AddJsonFile($"appsettings.{environment}.json", optional: true)
+    .AddEnvironmentVariables();
+
+var clientManager = new OrleansClientManager();
+
+clientManager.AddClient("Silo1", client =>
 {
-    static async Task Main(string[] args)
-    {
-        var clientManager = new OrleansClientManager();
-
-        clientManager.AddClient("Cluster1", clientBuilder =>
+    client
+        .UseLocalhostClustering()
+        .Configure<ClusterOptions>(options =>
         {
-            clientBuilder.UseAdoNetClustering(options =>
-            {
-                options.ConnectionString = "Server=localhost;Database=OrleansCluster1;User Id=yourUser;Password=yourPassword;";
-                options.Invariant = "System.Data.SqlClient";
-            });
+            options.ClusterId = "dev";
+            options.ServiceId = "ServiceId1";
         });
+});
 
-        clientManager.AddClient("Cluster2", clientBuilder =>
+
+clientManager.AddClient("Silo2", client =>
+{
+    client
+       .UseRedisClustering(opt =>
         {
-            clientBuilder.UseLocalhostClustering(serviceId: "YourServiceId", clusterId: "YourClusterId");
+            opt.ConfigurationOptions = redisConfiguration;
+        })
+        .Configure<ClusterOptions>(options =>
+        {
+            options.ClusterId = "dev";
+            options.ServiceId = "ServiceId2";
         });
+});
 
-        await clientManager.StartAllAsync();
+builder.Services.AddSingleton<IOrleansClientManager>(clientManager);
 
-        var client1 = clientManager.GetClient("Cluster1");
-        var client2 = clientManager.GetClient("Cluster2");
 
-        // Use the clients to interact with Orleans clusters...
-        
-        await clientManager.StopAllAsync();
-    }
+// You can inject in an method of minimal api or any another class that you need as bellow
+
+public static async Task<IResult> SampleMethodUsingMultipe([FromServices] IOrleansClientManager clientManager, string id)
+{
+   
+    var silo1Client = clientManager.GetClient("Silo1");
+    var silo2Client = clientManager.GetClient("Silo2");
+
+    var grain1 = silo1Client.GetGrain<IGrain1>(id);
+    var grain2 = silo2Client.GetGrain<IGrain2>(id);
+
+    // Now you can use your grains from different Silos
+
 }
 ```
 
